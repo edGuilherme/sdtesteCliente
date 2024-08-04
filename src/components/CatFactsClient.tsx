@@ -16,6 +16,7 @@ const CatFactsClient: React.FC = () => {
   const [editText, setEditText] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasVoted, setHasVoted] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     fetchAllCatFacts();
@@ -85,6 +86,11 @@ const CatFactsClient: React.FC = () => {
   };
 
   const voteCatFact = async (id: string) => {
+    if (hasVoted[id]) {
+      alert('You have already voted for this cat fact.');
+      return;
+    }
+
     try {
       const response = await fetch(`${BASE_URL}/${id}/vote`, {
         method: 'POST',
@@ -96,6 +102,9 @@ const CatFactsClient: React.FC = () => {
           fact._id === id ? data.fact : fact
         );
         setCatFacts(updatedFacts);
+
+        // Marca que o usuário votou para este fato
+        setHasVoted(prev => ({ ...prev, [id]: true }));
       } else {
         console.error('Fact data is missing in the response:', data);
       }
