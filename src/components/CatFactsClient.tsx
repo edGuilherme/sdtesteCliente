@@ -29,6 +29,11 @@ const CatFactsClient: React.FC = () => {
   };
 
   const addCatFact = async () => {
+    if (!newFact.trim()) {
+      alert('Please enter a cat fact.');
+      return;
+    }
+    
     try {
       const response = await fetch(BASE_URL, {
         method: 'POST',
