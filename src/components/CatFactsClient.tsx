@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import LoadingComponent from './LoadingComponent';
+import CatFactComponent from './CatFactComponent';
 
 interface CatFact {
   _id: string;
@@ -13,6 +15,7 @@ const CatFactsClient: React.FC = () => {
   const [newFact, setNewFact] = useState<string>('');
   const [editText, setEditText] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetchAllCatFacts();
@@ -23,6 +26,7 @@ const CatFactsClient: React.FC = () => {
       const response = await fetch(BASE_URL);
       const data = await response.json();
       setCatFacts(data);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching cat facts:', error);
     }
@@ -109,7 +113,9 @@ const CatFactsClient: React.FC = () => {
       console.error('Error getting most popular cat fact:', error);
     }
   };
-
+  if(isLoading){
+    return <LoadingComponent />
+  }
   return (
     <div>
       <h1>Cat Facts</h1>
@@ -119,35 +125,18 @@ const CatFactsClient: React.FC = () => {
         onChange={(e) => setNewFact(e.target.value)}
         placeholder="Add a new cat fact"
       />
-      <button onClick={addCatFact}>Add Fact</button>
-      <ul>
-        {catFacts.map(fact => (
-          <li key={fact._id}>
-            {editingId === fact._id ? (
-              <input
-                type="text"
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                placeholder="Enter new text"
-              />
-            ) : (
-              `${fact.text} (Votes: ${fact.votes})`
-            )}
-            {editingId === fact._id ? (
-              <>
-                <button onClick={() => updateCatFact(fact._id, editText)}>Save</button>
-                <button onClick={() => { setEditingId(null); setEditText(''); }}>Cancel</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setEditingId(fact._id)}>Update</button>
-                <button onClick={() => deleteCatFact(fact._id)}>Delete</button>
-                <button onClick={() => voteCatFact(fact._id)}>Vote</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+      <button onClick={addCatFact}>Add Cat Fact</button>
+      {catFacts.map(fact => (
+        <CatFactComponent
+          key={fact._id}
+          listId={fact._id}
+          text={fact.text}
+          votes={fact.votes}
+          onEdit={updateCatFact}
+          onVote={voteCatFact}
+          onDelete={deleteCatFact}
+        />
+      ))}
       <button onClick={getMostPopularCatFact}>Get Most Popular Cat Fact</button>
     </div>
   );
